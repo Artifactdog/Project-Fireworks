@@ -1,4 +1,4 @@
-"""Project-owned world model primitives, type registry, and persistence boundary."""
+"""Project-owned world model primitives, type registry, persistence, and transactions."""
 
 from .registry import TypeRegistry
 from .repository import (
@@ -6,14 +6,17 @@ from .repository import (
     EntityAlreadyExistsError,
     EntityNotFoundError,
     EntityRecord,
+    EventRecord,
     RelationRecord,
     StorageSchemaError,
     WorldInvariantError,
     WorldRepository,
     WorldStateError,
+    WorldTransaction,
 )
 from .types import (
     ComponentTypeDefinition,
+    EventTypeDefinition,
     RelationTypeDefinition,
     TypeDefinitionError,
     TypeNotRegisteredError,
@@ -26,6 +29,8 @@ __all__ = [
     "EntityAlreadyExistsError",
     "EntityNotFoundError",
     "EntityRecord",
+    "EventRecord",
+    "EventTypeDefinition",
     "RelationRecord",
     "RelationTypeDefinition",
     "StorageSchemaError",
@@ -36,4 +41,5 @@ __all__ = [
     "WorldInvariantError",
     "WorldRepository",
     "WorldStateError",
+    "WorldTransaction",
 ]
