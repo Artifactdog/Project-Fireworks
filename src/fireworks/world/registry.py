@@ -9,28 +9,30 @@ from jsonschema.exceptions import SchemaError, ValidationError
 
 from .types import (
     ComponentTypeDefinition,
+    EventTypeDefinition,
     RelationTypeDefinition,
     TypeDefinitionError,
     TypeNotRegisteredError,
     TypePayloadError,
 )
 
-Definition = TypeVar("Definition", ComponentTypeDefinition, RelationTypeDefinition)
+Definition = TypeVar(
+    "Definition",
+    ComponentTypeDefinition,
+    RelationTypeDefinition,
+    EventTypeDefinition,
+)
 
 _TYPE_ID_PATTERN = re.compile(r"^[a-z][a-z0-9_-]*(?:\.[a-z][a-z0-9_-]*)+$")
 
 
 class TypeRegistry:
-    """Registry of project/module-owned Component and Relation definitions.
-
-    Runtime data may only refer to definitions registered here. Definitions are keyed
-    by both stable type ID and integer schema version so old data can remain
-    intelligible while a newer definition exists.
-    """
+    """Registry of project/module-owned Component, Relation, and Event definitions."""
 
     def __init__(self) -> None:
         self._components: dict[tuple[str, int], ComponentTypeDefinition] = {}
         self._relations: dict[tuple[str, int], RelationTypeDefinition] = {}
+        self._events: dict[tuple[str, int], EventTypeDefinition] = {}
 
     def register_component(self, definition: ComponentTypeDefinition) -> None:
         self._validate_common_definition(definition.type_id, definition.schema_version)
@@ -43,11 +45,19 @@ class TypeRegistry:
         self._validate_relation_definition(definition)
         self._register(self._relations, definition)
 
+    def register_event(self, definition: EventTypeDefinition) -> None:
+        self._validate_common_definition(definition.type_id, definition.schema_version)
+        self._validate_schema(definition.schema, definition.type_id)
+        self._register(self._events, definition)
+
     def component(self, type_id: str, version: int | None = None) -> ComponentTypeDefinition:
         return self._get(self._components, type_id, version)
 
     def relation(self, type_id: str, version: int | None = None) -> RelationTypeDefinition:
         return self._get(self._relations, type_id, version)
+
+    def event(self, type_id: str, version: int | None = None) -> EventTypeDefinition:
+        return self._get(self._events, type_id, version)
 
     def validate_component_payload(
         self,
@@ -67,6 +77,16 @@ class TypeRegistry:
     ) -> RelationTypeDefinition:
         definition = self.relation(type_id, version)
         self._validate_payload(definition.payload_schema, payload, type_id)
+        return definition
+
+    def validate_event_payload(
+        self,
+        type_id: str,
+        payload: Mapping[str, Any],
+        version: int | None = None,
+    ) -> EventTypeDefinition:
+        definition = self.event(type_id, version)
+        self._validate_payload(definition.schema, payload, type_id)
         return definition
 
     @staticmethod

@@ -5,8 +5,8 @@ These choices are intentionally **not** decided yet. Agents must not silently lo
 Accepted decisions are recorded under `docs/decisions/`.
 
 ## Immediate implementation decisions
-- Exact Event and Knowledge persistence layouts and Perspective-construction pipeline.
-- Exact migration framework and persistent-schema evolution workflow beyond the current storage-schema revision marker.
+- Exact Knowledge/belief persistence layout and Perspective-construction pipeline.
+- Exact project/module Action registration and Director-facing Action proposal schemas.
 - Exact runtime AI provider/model for early real-AI tests.
 - Exact model adapter/protocol implementation.
 - Exact hosting/deployment environment.

@@ -21,6 +21,7 @@ class WorldReadView(Protocol):
 
 ComponentSemanticValidator = Callable[[WorldReadView, str, JsonObject], None]
 RelationSemanticValidator = Callable[[WorldReadView, str, str, JsonObject], None]
+EventSemanticValidator = Callable[[WorldReadView, JsonObject], None]
 
 
 class WorldTypeError(ValueError):
@@ -28,7 +29,7 @@ class WorldTypeError(ValueError):
 
 
 class TypeDefinitionError(WorldTypeError):
-    """A Component or Relation type definition itself is invalid."""
+    """A Component, Relation, or Event type definition itself is invalid."""
 
 
 class TypeNotRegisteredError(WorldTypeError):
@@ -62,6 +63,18 @@ class RelationTypeDefinition:
     max_from_source: int | None = None
     max_to_target: int | None = None
     semantic_validator: RelationSemanticValidator | None = field(
+        default=None,
+        compare=False,
+        repr=False,
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class EventTypeDefinition:
+    type_id: str
+    schema_version: int
+    schema: JsonObject
+    semantic_validator: EventSemanticValidator | None = field(
         default=None,
         compare=False,
         repr=False,
