@@ -2,10 +2,9 @@
 
 These choices are intentionally **not** decided yet. Agents must not silently lock them in.
 
+Accepted decisions are recorded under `docs/decisions/`.
+
 ## Immediate implementation decisions
-- Exact programming language/runtime for the first server implementation.
-- Exact web/server framework, if any.
-- Exact persistence implementation for the first implementation phase (for example SQLite or another store).
 - Exact schema/storage representation for Entity / Component / Relation / Event / Perspective concepts.
 - Exact runtime AI provider/model for early real-AI tests.
 - Exact model adapter/protocol implementation.
