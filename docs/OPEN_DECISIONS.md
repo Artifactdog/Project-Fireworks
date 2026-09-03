@@ -7,6 +7,7 @@ Accepted decisions are recorded under `docs/decisions/`.
 ## Immediate implementation decisions
 - Exact outer `DirectorDecision` schema, including multi-Action sequencing/commit semantics, narration, clarifications, and procedural-content proposals.
 - Exact policy that populates each request's allowed Director Action scope.
+- Exact Python minor-version compatibility/support policy; the initial CI job exercising Python 3.14 does not settle this.
 - Exact runtime AI provider/model for early real-AI tests.
 - Exact model adapter/protocol implementation beyond the provider-neutral Fireworks Action proposal contract.
 - Exact hosting/deployment environment.
