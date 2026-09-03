@@ -9,10 +9,10 @@ It should support at least one player and may support a small number of simultan
 
 ## Core principles
 
-### 1. Ellie retains authorship
+### 1. Artifactdog retains authorship
 AI assists with development and runtime direction, but does not become the author of the universe by default.
 
-Consequential creative and architectural decisions belong to Ellie. AI-generated content is allowed only within explicit authority boundaries.
+Consequential creative and architectural decisions belong to Artifactdog. AI-generated content is allowed only within explicit authority boundaries.
 
 ### 2. Text is the primary interface
 The project should remain usable through text input and text output. Natural language is the main interaction mode.
@@ -59,9 +59,12 @@ The architecture should support:
 - Sandbox: disposable test copies/experiments.
 
 ### 9. Cheap operation
-Development should make maximal use of Ellie's existing ChatGPT/Codex subscription.
+Development should make maximal use of Artifactdog's existing ChatGPT/Codex subscription.
 
 Runtime AI should be designed for very cheap models and minimal token use. Expensive models must never be architectural requirements.
 
 ### 10. Grow from a small real prototype
 The first release should prove the architecture with a small coherent world instead of attempting the final simulation immediately.
+
+### 11. Date-based versioning
+When a Fireworks release or other named project version needs an explicit version identifier, use `YYYY.M.D.N`, matching Rubies: no zero-padding for month or day; the first release on a date uses iteration `0`; later releases that same date increment the final number. Semantic versions such as `v0.1` or `v1.0` are not used.
