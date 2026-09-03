@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from fireworks.actions import ActionEngine
+from fireworks.actions import ActionContractError, ActionEngine
 from fireworks.storage import SQLiteStore
 from fireworks.world import (
     ComponentTypeDefinition,
@@ -183,6 +183,27 @@ def test_action_engine_rolls_back_failed_handler(tmp_path) -> None:
     assert world.events_after() == []
 
 
+@dataclass(frozen=True)
+class NoHistoryMoveAction:
+    destination: str
+
+    def execute(self, transaction: WorldTransaction) -> None:
+        current = transaction.relations_for("nadia", "core.physical_location")
+        transaction.remove_relation(current[0].relation_id)
+        transaction.add_relation("core.physical_location", "nadia", self.destination)
+
+
+def test_state_changing_action_without_event_is_rejected_and_rolled_back(tmp_path) -> None:
+    world = make_world(tmp_path / "world.sqlite3")
+    seed_locations(world)
+
+    with pytest.raises(ActionContractError):
+        ActionEngine(world).execute(NoHistoryMoveAction("apartment"))
+
+    assert world.relations_for("nadia", "core.physical_location")[0].target_entity_id == "bar"
+    assert world.events_after() == []
+
+
 def test_storage_revision_one_migrates_to_events_without_losing_entities(tmp_path) -> None:
     path = tmp_path / "world.sqlite3"
     store = SQLiteStore(path)
@@ -195,6 +216,33 @@ def test_storage_revision_one_migrates_to_events_without_losing_entities(tmp_pat
         )
         connection.execute(
             "CREATE TABLE entities (id TEXT PRIMARY KEY, created_at TEXT NOT NULL)"
+        )
+        connection.execute(
+            """
+            CREATE TABLE components (
+                entity_id TEXT NOT NULL,
+                type_id TEXT NOT NULL,
+                schema_version INTEGER NOT NULL,
+                payload_json TEXT NOT NULL,
+                PRIMARY KEY (entity_id, type_id),
+                FOREIGN KEY (entity_id) REFERENCES entities(id) ON DELETE CASCADE
+            )
+            """
+        )
+        connection.execute(
+            """
+            CREATE TABLE relations (
+                id TEXT PRIMARY KEY,
+                type_id TEXT NOT NULL,
+                schema_version INTEGER NOT NULL,
+                source_entity_id TEXT NOT NULL,
+                target_entity_id TEXT NOT NULL,
+                payload_json TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY (source_entity_id) REFERENCES entities(id) ON DELETE CASCADE,
+                FOREIGN KEY (target_entity_id) REFERENCES entities(id) ON DELETE CASCADE
+            )
+            """
         )
         connection.execute(
             "INSERT INTO entities(id, created_at) VALUES ('nadia', '2026-09-03T00:00:00+00:00')"
