@@ -4,7 +4,7 @@ Status: foundational
 
 ## Roles
 
-### Ellie
+### Artifactdog
 - Final author and design authority.
 - Chooses consequential behavior, creative direction, and hard-to-reverse architecture when alternatives materially affect the project.
 
@@ -49,7 +49,7 @@ Chat history is useful context but must not be the only place a durable project 
 
 ## Decision policy
 
-### Ask Ellie before choosing
+### Ask Artifactdog before choosing
 Ask before committing a choice that materially changes:
 - player-visible behavior;
 - lore/canon;
@@ -78,6 +78,9 @@ Non-trivial changes should be isolated on branches and reviewed before becoming 
 Prefer small commits with a single purpose. Avoid large opaque rewrites.
 
 Experiments should be easy to discard.
+
+## Versioning
+When an explicit Fireworks version identifier is needed, use `YYYY.M.D.N` with no zero-padding for month or day. The first release on a date is iteration `0`; subsequent releases on that date increment the final number. Do not use semantic-version labels such as `v0.1` or `v1.0`.
 
 ## Tests
 Every discovered invariant violation should become a regression test where practical.
