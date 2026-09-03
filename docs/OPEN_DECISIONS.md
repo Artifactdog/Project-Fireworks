@@ -5,9 +5,10 @@ These choices are intentionally **not** decided yet. Agents must not silently lo
 Accepted decisions are recorded under `docs/decisions/`.
 
 ## Immediate implementation decisions
-- Exact project/module Action registration and Director-facing Action proposal schemas.
+- Exact outer `DirectorDecision` schema, including multi-Action sequencing/commit semantics, narration, clarifications, and procedural-content proposals.
+- Exact policy that populates each request's allowed Director Action scope.
 - Exact runtime AI provider/model for early real-AI tests.
-- Exact model adapter/protocol implementation.
+- Exact model adapter/protocol implementation beyond the provider-neutral Fireworks Action proposal contract.
 - Exact hosting/deployment environment.
 - Exact authentication/account implementation for the first multiplayer release.
 - Exact perception/communication subsystems that produce recipient-scoped Perspective contributions.
