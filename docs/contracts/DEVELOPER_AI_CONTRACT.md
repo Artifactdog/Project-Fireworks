@@ -9,7 +9,7 @@ Sol/ChatGPT, Codex, or another developer agent should be able to work on Firewor
 Before implementation, the agent must inspect the repository-owned instructions and relevant documentation.
 
 The agent must:
-- preserve Ellie's authorship;
+- preserve Artifactdog's authorship;
 - surface consequential ambiguity;
 - follow accepted decision records;
 - keep modules/interfaces documented;
