@@ -8,7 +8,7 @@ Fireworks does not fundamentally require two different AI models. It requires se
 The Director operates inside the running game. It interprets player intent, requests permitted world information, proposes validated game operations, directs allowed procedural material, plays NPCs, and narrates results. Its permissions are deliberately narrow.
 
 ## Creator/Developer role
-The Creator/Developer role is privileged and exists for Ellie to inspect, design, stage, test, and develop Fireworks. Over time this role may be exposed inside Fireworks itself as Creator Mode.
+The Creator/Developer role is privileged and exists for Artifactdog to inspect, design, stage, test, and develop Fireworks. Over time this role may be exposed inside Fireworks itself as Creator Mode.
 
 Creator Mode must not become a hidden proprietary development environment. The repository remains ordinary Git-controlled source code and project-owned documentation, so a human or another compatible developer AI can repair or continue the project even if Creator Mode is broken.
 
