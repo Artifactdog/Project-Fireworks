@@ -5,7 +5,10 @@ These choices are intentionally **not** decided yet. Agents must not silently lo
 Accepted decisions are recorded under `docs/decisions/`.
 
 ## Immediate implementation decisions
-- Exact schema/storage representation for Entity / Component / Relation / Event / Perspective concepts.
+- Exact Live / Staging / Sandbox storage-isolation mechanism (for example separate SQLite databases versus one database with explicit environment scoping).
+- Exact SQLite table layout and mutation API for persistent Entity / Component / Relation current state.
+- Exact Event and Knowledge persistence layouts and Perspective-construction pipeline.
+- Exact migration framework and persistent-schema evolution workflow.
 - Exact runtime AI provider/model for early real-AI tests.
 - Exact model adapter/protocol implementation.
 - Exact hosting/deployment environment.
