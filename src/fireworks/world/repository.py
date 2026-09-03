@@ -64,8 +64,9 @@ class RelationRecord:
 class _ConnectionReadView(WorldReadView):
     """Read-only validator view bound to the mutation's SQLite transaction."""
 
-    def __init__(self, connection: sqlite3.Connection) -> None:
+    def __init__(self, connection: sqlite3.Connection, registry: TypeRegistry) -> None:
         self._connection = connection
+        self._registry = registry
 
     def entity_exists(self, entity_id: str) -> bool:
         return (
@@ -77,13 +78,22 @@ class _ConnectionReadView(WorldReadView):
         )
 
     def has_component(self, entity_id: str, type_id: str) -> bool:
-        return (
-            self._connection.execute(
-                "SELECT 1 FROM components WHERE entity_id = ? AND type_id = ?",
-                (entity_id, type_id),
-            ).fetchone()
-            is not None
+        row = self._connection.execute(
+            """
+            SELECT schema_version, payload_json
+            FROM components
+            WHERE entity_id = ? AND type_id = ?
+            """,
+            (entity_id, type_id),
+        ).fetchone()
+        if row is None:
+            return False
+        self._registry.validate_component_payload(
+            type_id,
+            json.loads(row["payload_json"]),
+            row["schema_version"],
         )
+        return True
 
 
 class WorldRepository(WorldReadView):
@@ -108,6 +118,33 @@ class WorldRepository(WorldReadView):
                 )
                 """
             )
+
+            row = connection.execute(
+                "SELECT value FROM fireworks_meta WHERE key = 'storage_schema_version'"
+            ).fetchone()
+            if row is None:
+                unversioned_world_table = connection.execute(
+                    """
+                    SELECT name
+                    FROM sqlite_master
+                    WHERE type = 'table' AND name IN ('entities', 'components', 'relations')
+                    LIMIT 1
+                    """
+                ).fetchone()
+                if unversioned_world_table is not None:
+                    raise StorageSchemaError(
+                        "World database contains unversioned canonical-state tables and cannot be adopted safely."
+                    )
+                connection.execute(
+                    "INSERT INTO fireworks_meta(key, value) VALUES ('storage_schema_version', ?)",
+                    (str(_STORAGE_SCHEMA_VERSION),),
+                )
+            elif row["value"] != str(_STORAGE_SCHEMA_VERSION):
+                raise StorageSchemaError(
+                    "World database storage schema revision "
+                    f"{row['value']} is not supported by this build; expected {_STORAGE_SCHEMA_VERSION}."
+                )
+
             connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS entities (
@@ -153,30 +190,16 @@ class WorldRepository(WorldReadView):
                 "CREATE INDEX IF NOT EXISTS idx_relations_type_target ON relations(type_id, target_entity_id)"
             )
 
-            row = connection.execute(
-                "SELECT value FROM fireworks_meta WHERE key = 'storage_schema_version'"
-            ).fetchone()
-            if row is None:
-                connection.execute(
-                    "INSERT INTO fireworks_meta(key, value) VALUES ('storage_schema_version', ?)",
-                    (str(_STORAGE_SCHEMA_VERSION),),
-                )
-            elif row["value"] != str(_STORAGE_SCHEMA_VERSION):
-                raise StorageSchemaError(
-                    "World database storage schema revision "
-                    f"{row['value']} is not supported by this build; expected {_STORAGE_SCHEMA_VERSION}."
-                )
-
     def entity_exists(self, entity_id: str) -> bool:
         with self.store.connect() as connection:
-            return _ConnectionReadView(connection).entity_exists(entity_id)
+            return _ConnectionReadView(connection, self.registry).entity_exists(entity_id)
 
     def has_component(self, entity_id: str, type_id: str) -> bool:
         with self.store.connect() as connection:
-            return _ConnectionReadView(connection).has_component(entity_id, type_id)
+            return _ConnectionReadView(connection, self.registry).has_component(entity_id, type_id)
 
     def create_entity(self, entity_id: str | None = None) -> EntityRecord:
-        resolved_id = entity_id or str(uuid4())
+        resolved_id = str(uuid4()) if entity_id is None else entity_id
         if not resolved_id.strip():
             raise WorldStateError("Entity IDs must not be empty.")
 
@@ -219,7 +242,7 @@ class WorldRepository(WorldReadView):
 
         with self.store.connect() as connection:
             connection.execute("BEGIN IMMEDIATE")
-            view = _ConnectionReadView(connection)
+            view = _ConnectionReadView(connection, self.registry)
             self._require_entity(view, entity_id)
 
             if definition.semantic_validator is not None:
@@ -255,7 +278,13 @@ class WorldRepository(WorldReadView):
             ).fetchone()
         if row is None:
             return None
-        return _component_from_row(row)
+        record = _component_from_row(row)
+        self.registry.validate_component_payload(
+            record.type_id,
+            record.payload,
+            record.schema_version,
+        )
+        return record
 
     def add_relation(
         self,
@@ -274,7 +303,9 @@ class WorldRepository(WorldReadView):
             schema_version,
         )
         payload_json = _encode_payload(resolved_payload)
-        resolved_relation_id = relation_id or str(uuid4())
+        resolved_relation_id = str(uuid4()) if relation_id is None else relation_id
+        if not resolved_relation_id.strip():
+            raise WorldStateError("Relation record IDs must not be empty.")
         created_at = _utc_now()
 
         source = source_entity_id
@@ -285,7 +316,7 @@ class WorldRepository(WorldReadView):
         try:
             with self.store.connect() as connection:
                 connection.execute("BEGIN IMMEDIATE")
-                view = _ConnectionReadView(connection)
+                view = _ConnectionReadView(connection, self.registry)
                 self._require_entity(view, source)
                 self._require_entity(view, target)
                 self._validate_relation_endpoints(view, definition, source, target)
@@ -344,7 +375,13 @@ class WorldRepository(WorldReadView):
             ).fetchone()
         if row is None:
             return None
-        return _relation_from_row(row)
+        record = _relation_from_row(row)
+        self.registry.validate_relation_payload(
+            record.type_id,
+            record.payload,
+            record.schema_version,
+        )
+        return record
 
     def relations_for(self, entity_id: str, type_id: str | None = None) -> list[RelationRecord]:
         with self.store.connect() as connection:
@@ -370,7 +407,15 @@ class WorldRepository(WorldReadView):
                     """,
                     (type_id, entity_id, entity_id),
                 ).fetchall()
-        return [_relation_from_row(row) for row in rows]
+
+        records = [_relation_from_row(row) for row in rows]
+        for record in records:
+            self.registry.validate_relation_payload(
+                record.type_id,
+                record.payload,
+                record.schema_version,
+            )
+        return records
 
     def remove_relation(self, relation_id: str) -> bool:
         with self.store.connect() as connection:
