@@ -5,12 +5,12 @@ These choices are intentionally **not** decided yet. Agents must not silently lo
 Accepted decisions are recorded under `docs/decisions/`.
 
 ## Immediate implementation decisions
-- Exact Knowledge/belief persistence layout and Perspective-construction pipeline.
 - Exact project/module Action registration and Director-facing Action proposal schemas.
 - Exact runtime AI provider/model for early real-AI tests.
 - Exact model adapter/protocol implementation.
 - Exact hosting/deployment environment.
 - Exact authentication/account implementation for the first multiplayer release.
+- Exact perception/communication subsystems that produce recipient-scoped Perspective contributions.
 
 ## Game/simulation decisions still open
 - Final genre/world setting and lore.
