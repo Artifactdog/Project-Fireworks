@@ -5,18 +5,17 @@ from pathlib import Path
 
 
 class SQLiteStore:
-    """Small SQLite boundary for Fireworks infrastructure.
-
-    Game-world schema deliberately does not live here yet. The storage model remains
-    an open design decision.
-    """
+    """SQLite connection boundary for one Fireworks world instance."""
 
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path)
 
     def connect(self) -> sqlite3.Connection:
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        return sqlite3.connect(self.path)
+        connection = sqlite3.connect(self.path, timeout=10.0)
+        connection.row_factory = sqlite3.Row
+        connection.execute("PRAGMA foreign_keys = ON")
+        return connection
 
     def check(self) -> None:
         with self.connect() as connection:
