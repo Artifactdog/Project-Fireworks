@@ -18,6 +18,8 @@ The runtime Director must not receive arbitrary `WorldTransaction` access. The i
 
 The initial `ActionEngine` is deliberately thin. It only guarantees that an already-resolved Action executes inside one `WorldTransaction`.
 
+A state-changing Action must append at least one Event in the same transaction. If it changes canonical state without recording any Event, the Action Engine treats that as a contract violation and rolls the transaction back. Read-only Actions may complete without an Event.
+
 Actual gameplay Action definitions, their input schemas, authority rules, and Director-facing proposal format remain separate decisions.
 
 ## Event history
