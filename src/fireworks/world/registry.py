@@ -9,6 +9,7 @@ from jsonschema.exceptions import SchemaError, ValidationError
 
 from .types import (
     ComponentTypeDefinition,
+    EpistemicClaimTypeDefinition,
     EventTypeDefinition,
     RelationTypeDefinition,
     TypeDefinitionError,
@@ -21,18 +22,20 @@ Definition = TypeVar(
     ComponentTypeDefinition,
     RelationTypeDefinition,
     EventTypeDefinition,
+    EpistemicClaimTypeDefinition,
 )
 
 _TYPE_ID_PATTERN = re.compile(r"^[a-z][a-z0-9_-]*(?:\.[a-z][a-z0-9_-]*)+$")
 
 
 class TypeRegistry:
-    """Registry of project/module-owned Component, Relation, and Event definitions."""
+    """Registry of project/module-owned world type definitions."""
 
     def __init__(self) -> None:
         self._components: dict[tuple[str, int], ComponentTypeDefinition] = {}
         self._relations: dict[tuple[str, int], RelationTypeDefinition] = {}
         self._events: dict[tuple[str, int], EventTypeDefinition] = {}
+        self._epistemic_claims: dict[tuple[str, int], EpistemicClaimTypeDefinition] = {}
 
     def register_component(self, definition: ComponentTypeDefinition) -> None:
         self._validate_common_definition(definition.type_id, definition.schema_version)
@@ -50,6 +53,11 @@ class TypeRegistry:
         self._validate_schema(definition.schema, definition.type_id)
         self._register(self._events, definition)
 
+    def register_epistemic_claim(self, definition: EpistemicClaimTypeDefinition) -> None:
+        self._validate_common_definition(definition.type_id, definition.schema_version)
+        self._validate_schema(definition.schema, definition.type_id)
+        self._register(self._epistemic_claims, definition)
+
     def component(self, type_id: str, version: int | None = None) -> ComponentTypeDefinition:
         return self._get(self._components, type_id, version)
 
@@ -58,6 +66,11 @@ class TypeRegistry:
 
     def event(self, type_id: str, version: int | None = None) -> EventTypeDefinition:
         return self._get(self._events, type_id, version)
+
+    def epistemic_claim(
+        self, type_id: str, version: int | None = None
+    ) -> EpistemicClaimTypeDefinition:
+        return self._get(self._epistemic_claims, type_id, version)
 
     def validate_component_payload(
         self,
@@ -86,6 +99,16 @@ class TypeRegistry:
         version: int | None = None,
     ) -> EventTypeDefinition:
         definition = self.event(type_id, version)
+        self._validate_payload(definition.schema, payload, type_id)
+        return definition
+
+    def validate_epistemic_claim_payload(
+        self,
+        type_id: str,
+        payload: Mapping[str, Any],
+        version: int | None = None,
+    ) -> EpistemicClaimTypeDefinition:
+        definition = self.epistemic_claim(type_id, version)
         self._validate_payload(definition.schema, payload, type_id)
         return definition
 

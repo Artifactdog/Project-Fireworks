@@ -8,21 +8,40 @@ The Runtime Director is interchangeable. Fireworks must be able to replace one m
 ## Director responsibilities
 The Director may:
 - interpret natural-language player intent;
-- request relevant world information through approved read tools;
+- request relevant information only through approved perspective-safe read tools;
 - propose one or more game operations;
 - play/narrate NPC behavior within granted authority;
-- narrate validated results from the perspective supplied by the engine;
+- narrate validated results from the Perspective supplied by the engine;
 - generate low-impact procedural material when policy explicitly permits it;
 - report unsupported player intents for creator review.
 
 ## Director prohibitions
 The Director may not:
 - directly mutate canonical state;
+- receive arbitrary `WorldRepository` / `WorldTransaction` access;
+- query omniscient Components, Relations, Events, or epistemic state outside the current Perspective boundary;
 - invent authoritative state that conflicts with engine-provided facts;
-- reveal information outside the supplied perspective/knowledge boundary;
+- reveal information outside the supplied Perspective/knowledge boundary;
+- decide that an additional character perceived or learned information when engine/module perception rules did not grant it;
 - silently create high-impact canon outside explicit authority;
 - assume model-specific hidden memory is canonical project memory;
 - access Creator/Developer tools or authority because it happens to share an underlying model with that role.
+
+## Perspective boundary
+Before a Director call, Fireworks constructs a temporary character-scoped Perspective.
+
+The Perspective may contain:
+- the current character's persistent typed Epistemic Records;
+- recipient-scoped current-perception facts;
+- recipient-scoped communication facts;
+- recipient-scoped public-information facts;
+- other information explicitly authorized by engine/module rules.
+
+The Director is not given omitted canonical truth and instructed merely to keep it secret. Information isolation occurs before the model call.
+
+Perspective-safe tools must preserve the same boundary. A Director-side lookup for a character or subject may return known/last-observed information, but must not silently fall through to omniscient current world state.
+
+Creator/Developer tools are a separate authority surface and may be omniscient.
 
 ## Adapter boundary
 Each model/provider integration must implement the same Fireworks-owned conceptual interface.
@@ -34,7 +53,7 @@ Conceptually:
 A request should contain only the context needed for the current decision, such as:
 - player input;
 - actor identity;
-- perspective-visible state;
+- Perspective-visible state;
 - relevant known facts;
 - allowed operations/tools;
 - authority limits;
@@ -62,8 +81,10 @@ If a model cannot reliably produce the required structure, the adapter may use v
 The project should eventually maintain a provider-independent Director conformance suite containing representative scenarios such as:
 - simple movement;
 - unavailable action;
-- private information;
+- private information unavailable to the current character;
+- stale last-known information versus newer hidden canonical truth;
 - two-player co-presence;
+- whisper/private-perception isolation;
 - phone communication;
 - conflicting player request versus canonical state;
 - low-impact procedural generation;

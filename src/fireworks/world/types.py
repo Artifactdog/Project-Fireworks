@@ -22,6 +22,7 @@ class WorldReadView(Protocol):
 ComponentSemanticValidator = Callable[[WorldReadView, str, JsonObject], None]
 RelationSemanticValidator = Callable[[WorldReadView, str, str, JsonObject], None]
 EventSemanticValidator = Callable[[WorldReadView, JsonObject], None]
+EpistemicClaimSemanticValidator = Callable[[WorldReadView, str, JsonObject], None]
 
 
 class WorldTypeError(ValueError):
@@ -29,7 +30,7 @@ class WorldTypeError(ValueError):
 
 
 class TypeDefinitionError(WorldTypeError):
-    """A Component, Relation, or Event type definition itself is invalid."""
+    """A registered world type definition itself is invalid."""
 
 
 class TypeNotRegisteredError(WorldTypeError):
@@ -75,6 +76,20 @@ class EventTypeDefinition:
     schema_version: int
     schema: JsonObject
     semantic_validator: EventSemanticValidator | None = field(
+        default=None,
+        compare=False,
+        repr=False,
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class EpistemicClaimTypeDefinition:
+    """Project/module-owned schema for one kind of character belief or knowledge claim."""
+
+    type_id: str
+    schema_version: int
+    schema: JsonObject
+    semantic_validator: EpistemicClaimSemanticValidator | None = field(
         default=None,
         compare=False,
         repr=False,

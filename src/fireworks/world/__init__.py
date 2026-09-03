@@ -1,5 +1,16 @@
-"""Project-owned world model primitives, type registry, persistence, and transactions."""
+"""Project-owned world model, persistence, epistemic state, and safe Perspective boundaries."""
 
+from .epistemics import (
+    EpistemicCertainty,
+    EpistemicRecord,
+    EpistemicWorldRepository,
+    EpistemicWorldTransaction,
+    Perspective,
+    PerspectiveBuilder,
+    PerspectiveClaim,
+    PerspectiveContribution,
+    PerspectiveSource,
+)
 from .registry import TypeRegistry
 from .repository import (
     ComponentRecord,
@@ -16,6 +27,7 @@ from .repository import (
 )
 from .types import (
     ComponentTypeDefinition,
+    EpistemicClaimTypeDefinition,
     EventTypeDefinition,
     RelationTypeDefinition,
     TypeDefinitionError,
@@ -29,8 +41,18 @@ __all__ = [
     "EntityAlreadyExistsError",
     "EntityNotFoundError",
     "EntityRecord",
+    "EpistemicCertainty",
+    "EpistemicClaimTypeDefinition",
+    "EpistemicRecord",
+    "EpistemicWorldRepository",
+    "EpistemicWorldTransaction",
     "EventRecord",
     "EventTypeDefinition",
+    "Perspective",
+    "PerspectiveBuilder",
+    "PerspectiveClaim",
+    "PerspectiveContribution",
+    "PerspectiveSource",
     "RelationRecord",
     "RelationTypeDefinition",
     "StorageSchemaError",
