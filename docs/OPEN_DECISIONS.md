@@ -13,10 +13,11 @@ Accepted decisions are recorded under `docs/decisions/`.
 - Exact hosting/deployment environment.
 - Exact authentication/account implementation for the first multiplayer release.
 - Exact perception/communication subsystems that produce recipient-scoped Perspective contributions.
+- Exact final wording of the Green Star opening prose; current implementation copy is draft pending Artifactdog approval.
 
 ## Game/simulation decisions still open
-- Final genre/world setting and lore.
-- Whether permanent night is a literal world rule, aesthetic framing, or temporary prototype simplification.
+- Final genre/world setting and lore beyond currently accepted canonical facts.
+- Why/how the city of Fireworks is always night and what broader world implications that has.
 - Exact canonical-time model and advancement rules.
 - Travel mechanics and interruption frequency.
 - Multiplayer action-scene/beat rules.
